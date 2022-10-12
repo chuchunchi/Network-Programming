@@ -1,11 +1,12 @@
-#include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-
+#include <arpa/inet.h>
+using namespace std;
 int main(int argc, char *argv[]){
 	char * IP = argv[1];
 	int portnum = atoi(argv[2]);
@@ -21,10 +22,13 @@ int main(int argc, char *argv[]){
 	char receivemsg[100];
 	//welcome to game
 	recv(tcpFd,receivemsg,sizeof(receivemsg),0);
-	printf("%s\n",receivemsg);
+	cout << receivemsg << endl;
 	while(1){
-		char command[100];
-		scanf(%s,command);
-		
+		string command;
+		cin >> command;
+		if(command=="exit"){
+			close(tcpFd);
+			return 0;
+		}
 	}	
 }
