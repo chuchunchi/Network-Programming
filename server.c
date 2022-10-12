@@ -22,10 +22,12 @@ int main(int argc, char *argv[]){
 	int l = listen(tcpFd,10);
 	if(l==-1) printf("listen error\n");
 	int info_size = sizeof(client_info);
-	int new_client = accept(tcpFd,(struct sockaddr *) &client_info, &info_size);
-	if(new_client==-1) printf("connection error\n");
-	else{
-		printf("New connection.\n");
-		send(new_client, msg, strlen(msg), 0); 
+	while(1){
+		int new_client = accept(tcpFd,(struct sockaddr *) &client_info, &info_size);
+		if(new_client==-1) printf("connection error\n");
+		else{
+			printf("New connection.\n");
+			send(new_client, msg, strlen(msg), 0); 
+		}
 	}	
 }

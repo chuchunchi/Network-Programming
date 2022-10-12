@@ -19,8 +19,12 @@ int main(int argc, char *argv[]){
 	int err = connect(tcpFd,(struct sockaddr *)&info,sizeof(info));
 	if(err==-1) printf("connect error\n");
 	char receivemsg[100];
+	//welcome to game
 	recv(tcpFd,receivemsg,sizeof(receivemsg),0);
 	printf("%s\n",receivemsg);
-
+	while(1){
+		char command[100];
+		scanf(%s,command);
 		
+	}	
 }
