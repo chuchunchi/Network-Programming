@@ -12,6 +12,8 @@
 #include <sys/time.h>
 using namespace std;
 
+char * IOHandle(char *recvmsg){}
+
 int main(int argc, char *argv[]){
 	int portnum = atoi(argv[1]);
 	vector<int> client_sds (10,0);
@@ -72,8 +74,9 @@ int main(int argc, char *argv[]){
 				}
 				else if(r==-1) continue;
 				else{
-					cout << client_sds[i] << '\n';
-					send(client_sds[i],"receive",1024,0);
+					char sendback[1024] = IOHandle(buffer);
+					//cout << client_sds[i] << '\n';
+					send(client_sds[i],sendback,1024,0);
 				}
 			}
 		}
