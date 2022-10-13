@@ -19,8 +19,8 @@ string _logout();
 string _gamerule();
 string _startgame(int number);
 string _exit();
-char * IOHandle(char *recvmsg){
-	char sendback[1024];
+string IOHandle(char *recvmsg){
+	string sendback="";
 	vector<string> command;
 	command.push_back("");
 	int para=0;
@@ -56,18 +56,52 @@ char * IOHandle(char *recvmsg){
     return sendback;
 }
 
+string _register(string username,string email,string password){
+	return "reg";
+}
+
+string _login(string username,string password){
+	return "log";
+}
+
+string _logout(){
+	return "out";
+}
+
+string _gamerule(){
+	return "*****Welcome to Game 1A2B*****\
+		1. Each question is a 4-digit secret number.\
+		2. After each guess, you will get a hint with the following information:\
+		2.1 The number of \"A\", which are digits in the guess that are in the correct position.\
+		2.2 The number of \"B\", which are digits in the guess that are in the answer but are in the wrong position.\
+		The hint will be formatted as \"xAyB\".\
+		3. 5 chances for each question.";
+}
+
+string _startgame(int number){
+	return "start";
+}
+
+string _exit(){
+	return "exit";
+}
+
 int main(int argc, char *argv[]){
 	int portnum = atoi(argv[1]);
 	vector<int> client_sds (10,0);
-
+	struct sockaddr_in info,client_info;
+	bzero(&info,sizeof(info));
+	info.sin_family = AF_INET;
+	info.sin_addr.s_addr = INADDR_ANY;
+	info.sin_port = htons(portnum);
 	//udp socket create
 	int udpFd = socket(AF_INET,SOCK_DGRAM,0);\
 	if(udpFd==-1) printf("socket create fail.\n");
 	int optu;
 	int multiconnectu = setsockopt(udpFd,SOL_SOCKET,SO_REUSEADDR,(char *)&optu,sizeof(optu));
 	if(multiconnectu==-1) printf("set sockopt fail!\n");
-	struct sockaddr_in infou;
-	int bu = bind(udpFd,(struct sockaddr *)&infou,sizeof(infou));
+	
+	int bu = bind(udpFd,(struct sockaddr *)&info,sizeof(info));
 	if(bu==-1) printf("bind error\n");
 
 	//tcp socket create
@@ -77,11 +111,7 @@ int main(int argc, char *argv[]){
 	int opt;
 	int multiconnect = setsockopt(tcpFd,SOL_SOCKET,SO_REUSEADDR,(char *)&opt,sizeof(opt));
 	if(multiconnect==-1) printf("set sockopt fail!\n");
-	struct sockaddr_in info,client_info;
-	bzero(&info,sizeof(info));
-	info.sin_family = AF_INET;
-	info.sin_addr.s_addr = INADDR_ANY;
-	info.sin_port = htons(portnum);
+	
 	int b = bind(tcpFd,(struct sockaddr *)&info,sizeof(info));
 	if(b==-1) printf("bind error\n");
 	int l = listen(tcpFd,10);
@@ -91,6 +121,7 @@ int main(int argc, char *argv[]){
 	while(1){
 		FD_ZERO(&readfds);
 		FD_SET(tcpFd,&readfds);
+		FD_SET(udpFd,&readfds);
 		int maxsd = tcpFd;
 		//add child socket to set
 		for(int i=0;i<10;i++){
@@ -119,7 +150,8 @@ int main(int argc, char *argv[]){
 		}
 		if(FD_ISSET(udpFd,&readfds)){
 			char bufu[1024];
-			int r = recv(udpFd,bufu,1024,0);
+			cout << "here!!\n";
+			int r = recvfrom(udpFd,bufu,1024,MSG_WAITALL, (struct sockaddr *)&client_info,&info_size);
 			if(r!=0){
 				cout << "recv from udp: " << bufu << '\n';
 			}
@@ -136,7 +168,7 @@ int main(int argc, char *argv[]){
 				else if(r==-1) continue;
 				else{
 					char sendback[1024];
-					sendback = IOHandle(buffer);
+					strcpy(sendback,IOHandle(buffer).c_str());
 					//cout << client_sds[i] << '\n';
 					send(client_sds[i],sendback,1024,0);
 				}

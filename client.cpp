@@ -40,7 +40,7 @@ string IOHandle(char * recvmsg,int * istcp){
 		}
 	}
 	else if(command[0]=="start-game"){
-		try{stoi(command[1])}
+		try{stoi(command[1]);}
 		catch(...){
 			sendback = start_usage;
 		}
@@ -54,22 +54,18 @@ string IOHandle(char * recvmsg,int * istcp){
 int main(int argc, char *argv[]){
 	char * IP = argv[1];
 	int portnum = atoi(argv[2]);
+	struct sockaddr_in info;
+	bzero(&info,sizeof(info));
+	info.sin_family = AF_INET;
+	info.sin_addr.s_addr = inet_addr(IP);
+	info.sin_port = htons(portnum);
 	// udp socket create
 	int udpFd = socket(AF_INET,SOCK_DGRAM,0);
-    if(udpFd==-1) printf("udp socket create fail.\n");
-    struct sockaddr_in udpinfo;
-    bzero(&udpinfo,sizeof(udpinfo));
-	int erru = connect(udpFd,(struct sockaddr *)&udpinfo,sizeof(udpinfo));
-	if(erru==-1) printf("connect error\n");
-
+	if(udpFd==-1) printf("udp socket create fail.\n");
+	
 	//tcp socket create
 	int tcpFd = socket(AF_INET,SOCK_STREAM,0);
-    if(tcpFd==-1) printf("socket create fail.\n");
-    struct sockaddr_in info;
-    bzero(&info,sizeof(info));
-    info.sin_family = AF_INET;
-    info.sin_addr.s_addr = inet_addr(IP);
-    info.sin_port = htons(portnum);
+	if(tcpFd==-1) printf("socket create fail.\n");
 	int err = connect(tcpFd,(struct sockaddr *)&info,sizeof(info));
 	if(err==-1) printf("connect error\n");
 	char receivemsg[1024];
@@ -93,10 +89,11 @@ int main(int argc, char *argv[]){
 			cout << receivemsg << '\n';
 		}
 		else{
-			int s=send(udpFd,command,sizeof(command),0);
-			if(s==-1) cout << "send error\n";
+			socklen_t info_len = sizeof(info);
+			sendto(udpFd,command,sizeof(command),MSG_CONFIRM,(const struct sockaddr *) &info, sizeof(info));
+			cout << "sent!\n";
 			char receivemsg[1024];
-			recv(udpFd,receivemsg,sizeof(receivemsg),0);
+			recvfrom(udpFd,receivemsg,sizeof(receivemsg),MSG_WAITALL,(struct sockaddr *) &info,&info_len);
 			cout << receivemsg << '\n';
 		}
 	}	
