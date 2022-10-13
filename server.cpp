@@ -38,13 +38,13 @@ int main(int argc, char *argv[]){
 		int maxsd = tcpFd;
 		//add child socket to set
 		for(int i=0;i<10;i++){
-			int sd = client_sds[i];
-			if(sd>0) FD_SET(sd,&readfds);
-			if(sd>maxsd) maxsd=sd;		
+			if(client_sds[i]>0) FD_SET(client_sds[i],&readfds);
+			if(client_sds[i]>maxsd) maxsd=client_sds[i];		
 		}
 		//select activity of one of the sockets
 		int activity = select(maxsd+1,&readfds,NULL,NULL,NULL);
 		if(activity==-1) printf("select error\n");
+		//new connection
 		if(FD_ISSET(tcpFd,&readfds)){
 			int new_client = accept(tcpFd,(struct sockaddr *) &client_info, &info_size);
 			if(new_client==-1) printf("connection error\n");
@@ -58,6 +58,22 @@ int main(int argc, char *argv[]){
 					//put new client to an empty client sd
 					client_sds[i] = new_client;
 					break;
+				}
+			}
+		}
+		//old connection's operation
+		for(int i=0;i<10;i++){
+			if(FD_ISSET(client_sds[i],&readfds)){
+				char buffer[1024];
+				int r = recv(client_sds[i],buffer,1024,0);
+				if(r==0){
+					close(client_sds[i]);
+					client_sds[i] = 0;
+				}
+				else if(r==-1) continue;
+				else{
+					cout << client_sds[i] << '\n';
+					send(client_sds[i],"receive",1024,0);
 				}
 			}
 		}

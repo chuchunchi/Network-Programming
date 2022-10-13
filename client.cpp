@@ -19,16 +19,17 @@ int main(int argc, char *argv[]){
         info.sin_port = htons(portnum);
 	int err = connect(tcpFd,(struct sockaddr *)&info,sizeof(info));
 	if(err==-1) printf("connect error\n");
-	char receivemsg[100];
+	char receivemsg[1024];
 	//welcome to game
 	recv(tcpFd,receivemsg,sizeof(receivemsg),0);
 	cout << receivemsg << endl;
 	while(1){
-		string command;
-		cin >> command;
-		if(command=="exit"){
-			close(tcpFd);
-			return 0;
-		}
+		char command[1024];
+		cin.getline(command,1024);
+		int s=send(tcpFd,command,sizeof(command),0);
+		if(s==-1) cout << "send error\n";
+		char receivemsg[1024];
+		recv(tcpFd,receivemsg,sizeof(receivemsg),0);
+		cout << receivemsg << '\n';
 	}	
 }
