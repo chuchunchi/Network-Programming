@@ -13,12 +13,12 @@
 #include <string>
 #include <cstring>
 using namespace std;
-_register(string username,string email,string password);
-_login(string username,string password);
-_logout();
-_gamerule();
-_startgame(int number);
-_exit();
+string _register(string username,string email,string password);
+string _login(string username,string password);
+string _logout();
+string _gamerule();
+string _startgame(int number);
+string _exit();
 char * IOHandle(char *recvmsg){
 	char sendback[1024];
 	vector<string> command;
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]){
 	int optu;
 	int multiconnectu = setsockopt(udpFd,SOL_SOCKET,SO_REUSEADDR,(char *)&optu,sizeof(optu));
 	if(multiconnectu==-1) printf("set sockopt fail!\n");
-	
+	struct sockaddr_in infou;
 	int bu = bind(udpFd,(struct sockaddr *)&infou,sizeof(infou));
 	if(bu==-1) printf("bind error\n");
 
@@ -135,7 +135,8 @@ int main(int argc, char *argv[]){
 				}
 				else if(r==-1) continue;
 				else{
-					char sendback[1024] = IOHandle(buffer);
+					char sendback[1024];
+					sendback = IOHandle(buffer);
 					//cout << client_sds[i] << '\n';
 					send(client_sds[i],sendback,1024,0);
 				}

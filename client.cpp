@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <string>
 #include <cstring>
+#include <vector>
 using namespace std;
 string reg_usage = "Usage: register <username> <email> <password>";
 string login_usage = "Usage: login <username> <password>";
@@ -57,10 +58,7 @@ int main(int argc, char *argv[]){
 	int udpFd = socket(AF_INET,SOCK_DGRAM,0);
     if(udpFd==-1) printf("udp socket create fail.\n");
     struct sockaddr_in udpinfo;
-    bzero(&info,sizeof(udpinfo));
-    udpinfo.sin_family = AF_INET;
-    udpinfo.sin_addr.s_addr = inet_addr(IP);
-    udpinfo.sin_port = htons(portnum);
+    bzero(&udpinfo,sizeof(udpinfo));
 	int erru = connect(udpFd,(struct sockaddr *)&udpinfo,sizeof(udpinfo));
 	if(erru==-1) printf("connect error\n");
 
