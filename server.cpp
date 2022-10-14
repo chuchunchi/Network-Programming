@@ -36,22 +36,22 @@ string IOHandle(char *recvmsg){
 		}
 	}
 	if(command[0]=="register"){
-		_register(command[1],command[2],command[3]);
+		sendback =_register(command[1],command[2],command[3]);
 	}
 	else if(command[0]=="login"){
-		_login(command[1],command[2]);	
+		sendback = _login(command[1],command[2]);	
 	}
 	else if(command[0]=="logout"){
-		_logout();
+		sendback = _logout();
 	}
 	else if(command[0]=="game-rule"){
-		_gamerule();
+		sendback = _gamerule();
 	}
 	else if(command[0]=="start-game"){
-		_startgame(stoi(command[1]));
+		sendback = _startgame(stoi(command[1]));
 	}
 	else if(command[0]=="exit"){
-		_exit();
+		sendback = _exit();
 	}
     return sendback;
 }
@@ -152,9 +152,13 @@ int main(int argc, char *argv[]){
 			char bufu[1024];
 			cout << "here!!\n";
 			int r = recvfrom(udpFd,bufu,1024,MSG_WAITALL, (struct sockaddr *)&client_info,&info_size);
-			if(r!=0){
-				cout << "recv from udp: " << bufu << '\n';
+			if(r<=0){
+				cout << "recv from udp error" <<'\n';
 			}
+			char sendback[1024];
+			strcpy(sendback,"sendback");
+			int s = sendto(udpFd,sendback,sizeof(sendback),MSG_CONFIRM,(const struct sockaddr *) &client_info,info_size);
+			if(s<=0) cout << "sent back error!\n";
 		}
 		//old connection's operation
 		for(int i=0;i<10;i++){
@@ -168,6 +172,7 @@ int main(int argc, char *argv[]){
 				else if(r==-1) continue;
 				else{
 					char sendback[1024];
+					cout << "iooutput" << IOHandle(buffer) << '\n';
 					strcpy(sendback,IOHandle(buffer).c_str());
 					//cout << client_sds[i] << '\n';
 					send(client_sds[i],sendback,1024,0);
@@ -176,3 +181,5 @@ int main(int argc, char *argv[]){
 		}
 	}	
 }
+
+

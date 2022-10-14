@@ -71,8 +71,8 @@ int main(int argc, char *argv[]){
 	char receivemsg[1024];
 	//welcome to game
 	recv(tcpFd,receivemsg,sizeof(receivemsg),0);
-	cout << receivemsg << endl;
-	while(1){
+	cout << receivemsg << '\n';
+	while(1){ 
 		char command[1024];
 		cin.getline(command,1024);
 		int istcp=1;
@@ -91,7 +91,6 @@ int main(int argc, char *argv[]){
 		else{
 			socklen_t info_len = sizeof(info);
 			sendto(udpFd,command,sizeof(command),MSG_CONFIRM,(const struct sockaddr *) &info, sizeof(info));
-			cout << "sent!\n";
 			char receivemsg[1024];
 			recvfrom(udpFd,receivemsg,sizeof(receivemsg),MSG_WAITALL,(struct sockaddr *) &info,&info_len);
 			cout << receivemsg << '\n';
