@@ -12,6 +12,8 @@
 #include <sys/time.h>
 #include <string>
 #include <cstring>
+#include <set>
+#include <map>
 using namespace std;
 int currentindex;
 vector<int> client_sds (10,0);
@@ -21,6 +23,8 @@ string _logout();
 string _gamerule();
 string _startgame(int number);
 string _exit();
+set<string> emails;
+map<string,string> account;
 string IOHandle(char *recvmsg){
 	string sendback="";
 	vector<string> command;
@@ -57,12 +61,10 @@ string IOHandle(char *recvmsg){
 	}
     return sendback;
 }
-set<string> emails;
-map<string,string> account;
 string _register(string username,string email,string password){
 	string ret;
 	map<string,string>::iterator itm;
-	itm = acocunt.find(username);
+	itm = account.find(username);
 	set<string>::iterator its;
 	its = emails.find(email);
 	if(itm!=account.end()){
@@ -83,15 +85,13 @@ string _login(string username,string password){
 	string ret;
 	map<string,string>::iterator itm;
 	itm = account.find(username);
-	vector<string>::iterator its;
-	its = islogin.find(username);
-	if(its!=islogin.end()){
+	if(islogin[currentindex]!=""){
 		ret = "Please logout first.";
 	}
 	else if(itm==account.end()){
 		ret = "Username not found.";
 	}
-	else if(password!=*itm){
+	else if(password!=itm->second){
 		ret = "Password not correct.";
 	}
 	else{
@@ -129,7 +129,9 @@ string _startgame(int number){
 
 string _exit(){
 	islogin[currentindex]="";
+	cout << "done\n";
 	close(client_sds[currentindex]);
+	client_sds[currentindex]=0;
 	return "";
 }
 

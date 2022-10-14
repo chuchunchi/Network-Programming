@@ -10,6 +10,7 @@
 #include <cstring>
 #include <vector>
 using namespace std;
+int isexit=0;
 string reg_usage = "Usage: register <username> <email> <password>";
 string login_usage = "Usage: login <username> <password>";
 string start_usage = "Usage: start-game <4-digit number>";
@@ -53,6 +54,9 @@ string IOHandle(char * recvmsg,int * istcp){
 	else if(command[0]=="game-rule"){
 		*istcp = 0;
 	}
+	else if(command[0]=="exit"){
+		isexit = 1;
+	}
     return sendback;
 }
 int main(int argc, char *argv[]){
@@ -88,6 +92,11 @@ int main(int argc, char *argv[]){
 		if(istcp){
 			int s=send(tcpFd,command,sizeof(command),0);
 			if(s==-1) cout << "send error\n";
+			if(isexit){
+				close(tcpFd);
+				close(udpFd);
+				break;
+			}
 			char receivemsg[1024];
 			recv(tcpFd,receivemsg,sizeof(receivemsg),0);
 			cout << receivemsg << '\n';
