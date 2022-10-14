@@ -13,6 +13,8 @@
 #include <string>
 #include <cstring>
 using namespace std;
+int currentindex;
+vector<int> client_sds (10,0);
 string _register(string username,string email,string password);
 string _login(string username,string password);
 string _logout();
@@ -55,27 +57,70 @@ string IOHandle(char *recvmsg){
 	}
     return sendback;
 }
-
+set<string> emails;
+map<string,string> account;
 string _register(string username,string email,string password){
-	return "reg";
+	string ret;
+	map<string,string>::iterator itm;
+	itm = acocunt.find(username);
+	set<string>::iterator its;
+	its = emails.find(email);
+	if(itm!=account.end()){
+		ret = "Username is already used.";
+	}
+	else if(its!=emails.end()){
+		ret = "Email is already used.";
+	}
+	else{
+		account.insert(pair<string,string>(username,password));
+		emails.insert(email);
+		ret = "Register successfully.";
+	}
+	return ret;
 }
-
+vector<string> islogin(10,"");
 string _login(string username,string password){
-	return "log";
+	string ret;
+	map<string,string>::iterator itm;
+	itm = account.find(username);
+	vector<string>::iterator its;
+	its = islogin.find(username);
+	if(its!=islogin.end()){
+		ret = "Please logout first.";
+	}
+	else if(itm==account.end()){
+		ret = "Username not found.";
+	}
+	else if(password!=*itm){
+		ret = "Password not correct.";
+	}
+	else{
+		islogin[currentindex] = username;
+		ret = "Welcome, "+username+".";
+	}
+	return ret;
 }
 
 string _logout(){
-	return "out";
+	string ret;
+	if(islogin[currentindex]==""){
+		ret = "Please login first.";
+	}
+	else{
+		ret = "Bye, "+islogin[currentindex];
+		islogin[currentindex] = "";
+	}
+	return ret;
 }
 
 string _gamerule(){
 	return "*****Welcome to Game 1A2B*****\n\
-		1. Each question is a 4-digit secret number.\n\
-		2. After each guess, you will get a hint with the following information:\n\
-		2.1 The number of \"A\", which are digits in the guess that are in the correct position.\n\
-		2.2 The number of \"B\", which are digits in the guess that are in the answer but are in the wrong position.\n\
-		The hint will be formatted as \"xAyB\".\n\
-		3. 5 chances for each question.\n";
+1. Each question is a 4-digit secret number.\n\
+2. After each guess, you will get a hint with the following information:\n\
+2.1 The number of \"A\", which are digits in the guess that are in the correct position.\n\
+2.2 The number of \"B\", which are digits in the guess that are in the answer but are in the wrong position.\n\
+The hint will be formatted as \"xAyB\".\n\
+3. 5 chances for each question.\n";
 }
 
 string _startgame(int number){
@@ -83,12 +128,14 @@ string _startgame(int number){
 }
 
 string _exit(){
-	return "exit";
+	islogin[currentindex]="";
+	close(client_sds[currentindex]);
+	return "";
 }
 
 int main(int argc, char *argv[]){
 	int portnum = atoi(argv[1]);
-	vector<int> client_sds (10,0);
+	
 	struct sockaddr_in info,client_info;
 	bzero(&info,sizeof(info));
 	info.sin_family = AF_INET;
@@ -163,6 +210,7 @@ int main(int argc, char *argv[]){
 		//old connection's operation
 		for(int i=0;i<10;i++){
 			if(FD_ISSET(client_sds[i],&readfds)){
+				currentindex = i;
 				char buffer[1024];
 				int r = recv(client_sds[i],buffer,1024,0);
 				if(r==0){
@@ -172,7 +220,6 @@ int main(int argc, char *argv[]){
 				else if(r==-1) continue;
 				else{
 					char sendback[1024];
-					cout << "iooutput" << IOHandle(buffer) << '\n';
 					strcpy(sendback,IOHandle(buffer).c_str());
 					//cout << client_sds[i] << '\n';
 					send(client_sds[i],sendback,1024,0);
@@ -181,5 +228,3 @@ int main(int argc, char *argv[]){
 		}
 	}	
 }
-
-
