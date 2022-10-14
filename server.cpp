@@ -14,15 +14,19 @@
 #include <cstring>
 #include <set>
 #include <map>
+#include <time.h>
 using namespace std;
 int currentindex;
 vector<int> client_sds (10,0);
+vector<int> gametime (10,0);
+vector<string> gameans (10,"");
 string _register(string username,string email,string password);
 string _login(string username,string password);
 string _logout();
 string _gamerule();
 string _startgame(int number);
 string _exit();
+string game(string guess);
 set<string> emails;
 map<string,string> account;
 string IOHandle(char *recvmsg){
@@ -54,10 +58,31 @@ string IOHandle(char *recvmsg){
 		sendback = _gamerule();
 	}
 	else if(command[0]=="start-game"){
-		sendback = _startgame(stoi(command[1]));
+		if(command.size()==2){
+			sendback = _startgame(command[1]);
+		}
+		else{
+			srand(time(NULL));
+			int a = rand()%10000;
+			sendback = _startgame(to_string(a));
+		}
 	}
 	else if(command[0]=="exit"){
 		sendback = _exit();
+	}
+	else if(gametime[currentindex]>0){
+		if(command.size()==1){
+			if(command[0].size()==4){
+				try{stoi(command[0]);}
+				catch(...){
+					return "Your guess should be a 4-digit number.";
+				}
+				sendback = game(command[0]);
+			}
+			else sendback = "Your guess should be a 4-digit number.";
+		}
+		else sendback = "Your guess should be a 4-digit number.";
+		
 	}
     return sendback;
 }
@@ -123,10 +148,49 @@ The hint will be formatted as \"xAyB\".\n\
 3. 5 chances for each question.\n";
 }
 
-string _startgame(int number){
-	return "start";
+string _startgame(string number){
+	string ret;
+	gameans[currentindex] = number;
+	if(islogin[currentindex]==""){
+		ret = "Please login first.";
+	}
+	else{
+		gametime[currentindex] = 5;
+		ret = "Please typing a 4-digit number:";
+	}
+	return ret;
 }
 
+string game(string guess){
+	string ret;
+	int A=0,B=0;
+	string ans = gameans[currentindex];
+	if(ans==guess){
+		ret = "You got the answer!";
+	}
+	else{
+		gametime[currentindex]--;
+		if(gametime[currentindex]==0){
+			return "You lose the game!";
+		}
+		for(int i=0;i<4;i++){
+			if(ans[i]==guess[i]){
+				A++;
+				break;
+			}
+			else{
+				for(int j=0;j<4;j++){
+					if(ans[i]==guess[j]){
+						B++;
+						break;
+					}
+				}
+			}
+		}
+		ret = to_string(A)+"A"+to_string(B)+"B";
+	}
+	return ret;
+}
 string _exit(){
 	islogin[currentindex]="";
 	cout << "done\n";

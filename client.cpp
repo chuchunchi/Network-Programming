@@ -41,14 +41,16 @@ string IOHandle(char * recvmsg,int * istcp){
 		}
 	}
 	else if(command[0]=="start-game"){
-		if(command.size()!=2||(command.size()==2&&command[1].size()!=4)){
+		if((command.size()!=1&&command.size()!=2)||(command.size()==2&&command[1].size()!=4)){
 			sendback = start_usage;
 			return sendback;
 		}
-		try{stoi(command[1]);}
-		catch(...){
-			sendback = start_usage;
-			return sendback;
+		if(command.size()==2){
+			try{stoi(command[1]);}
+			catch(...){
+				sendback = start_usage;
+				return sendback;
+			}
 		}
 	}
 	else if(command[0]=="game-rule"){
