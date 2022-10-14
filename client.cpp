@@ -19,7 +19,6 @@ string IOHandle(char * recvmsg,int * istcp){
 	vector<string> command;
 	command.push_back("");
 	int para=0;
-	cout << strlen(recvmsg) << endl;
 	for(int i=0;i<strlen(recvmsg);i++){
 		if(recvmsg[i]!=' '){
 			command[para]+=recvmsg[i];

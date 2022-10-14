@@ -24,7 +24,7 @@ string _register(string username,string email,string password);
 string _login(string username,string password);
 string _logout();
 string _gamerule();
-string _startgame(int number);
+string _startgame(string number);
 string _exit();
 string game(string guess);
 set<string> emails;
@@ -34,7 +34,6 @@ string IOHandle(char *recvmsg){
 	vector<string> command;
 	command.push_back("");
 	int para=0;
-	cout << strlen(recvmsg) << endl;
 	for(int i=0;i<strlen(recvmsg);i++){
 		if(recvmsg[i]!=' '){
 			command[para]+=recvmsg[i];
@@ -167,10 +166,13 @@ string game(string guess){
 	string ans = gameans[currentindex];
 	if(ans==guess){
 		ret = "You got the answer!";
+		gametime[currentindex] = 0;
+		gameans[currentindex] = "";
 	}
 	else{
 		gametime[currentindex]--;
 		if(gametime[currentindex]==0){
+			gameans[currentindex] = "";
 			return "You lose the game!";
 		}
 		for(int i=0;i<4;i++){
@@ -192,8 +194,7 @@ string game(string guess){
 	return ret;
 }
 string _exit(){
-	islogin[currentindex]="";
-	cout << "done\n";
+	islogin[currentindex]="";	
 	close(client_sds[currentindex]);
 	client_sds[currentindex]=0;
 	return "";
@@ -263,7 +264,6 @@ int main(int argc, char *argv[]){
 		}
 		if(FD_ISSET(udpFd,&readfds)){
 			char bufu[1024];
-			cout << "here!!\n";
 			int r = recvfrom(udpFd,bufu,1024,MSG_WAITALL, (struct sockaddr *)&client_info,&info_size);
 			if(r<=0){
 				cout << "recv from udp error" <<'\n';
