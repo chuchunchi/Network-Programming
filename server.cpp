@@ -69,13 +69,13 @@ string _logout(){
 }
 
 string _gamerule(){
-	return "*****Welcome to Game 1A2B*****\
-		1. Each question is a 4-digit secret number.\
-		2. After each guess, you will get a hint with the following information:\
-		2.1 The number of \"A\", which are digits in the guess that are in the correct position.\
-		2.2 The number of \"B\", which are digits in the guess that are in the answer but are in the wrong position.\
-		The hint will be formatted as \"xAyB\".\
-		3. 5 chances for each question.";
+	return "*****Welcome to Game 1A2B*****\n\
+		1. Each question is a 4-digit secret number.\n\
+		2. After each guess, you will get a hint with the following information:\n\
+		2.1 The number of \"A\", which are digits in the guess that are in the correct position.\n\
+		2.2 The number of \"B\", which are digits in the guess that are in the answer but are in the wrong position.\n\
+		The hint will be formatted as \"xAyB\".\n\
+		3. 5 chances for each question.\n";
 }
 
 string _startgame(int number){
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]){
 				cout << "recv from udp error" <<'\n';
 			}
 			char sendback[1024];
-			strcpy(sendback,"sendback");
+			strcpy(sendback,IOHandle(bufu).c_str());
 			int s = sendto(udpFd,sendback,sizeof(sendback),MSG_CONFIRM,(const struct sockaddr *) &client_info,info_size);
 			if(s<=0) cout << "sent back error!\n";
 		}
