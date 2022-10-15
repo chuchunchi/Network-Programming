@@ -30,27 +30,6 @@ string IOHandle(char * recvmsg,int * istcp){
 	}
 	if(command[0]=="register"){
 		*istcp = 0;
-		if(command.size()!=4){
-			sendback = reg_usage;
-		}
-	}
-	else if(command[0]=="login"){
-		if(command.size()!=3){
-			sendback = login_usage;
-		}
-	}
-	else if(command[0]=="start-game"){
-		if((command.size()!=1&&command.size()!=2)||(command.size()==2&&command[1].size()!=4)){
-			sendback = start_usage;
-			return sendback;
-		}
-		if(command.size()==2){
-			try{stoi(command[1]);}
-			catch(...){
-				sendback = start_usage;
-				return sendback;
-			}
-		}
 	}
 	else if(command[0]=="game-rule"){
 		*istcp = 0;

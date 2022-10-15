@@ -17,6 +17,9 @@
 #include <time.h>
 using namespace std;
 int currentindex;
+string reg_usage = "Usage: register <username> <email> <password>";
+string login_usage = "Usage: login <username> <password>";
+string start_usage = "Usage: start-game <4-digit number>";
 vector<int> client_sds (10,0);
 vector<int> gametime (10,0);
 vector<string> gameans (10,"");
@@ -45,10 +48,16 @@ string IOHandle(char *recvmsg){
 		}
 	}
 	if(command[0]=="register"){
-		sendback =_register(command[1],command[2],command[3]);
+		if(command.size()!=4){
+			sendback = reg_usage;
+		}
+		else sendback =_register(command[1],command[2],command[3]);
 	}
 	else if(command[0]=="login"){
-		sendback = _login(command[1],command[2]);	
+		if(command.size()!=3){
+			sendback = login_usage;
+		}
+		else sendback = _login(command[1],command[2]);	
 	}
 	else if(command[0]=="logout"){
 		sendback = _logout();
@@ -57,7 +66,16 @@ string IOHandle(char *recvmsg){
 		sendback = _gamerule();
 	}
 	else if(command[0]=="start-game"){
+		if((command.size()!=1&&command.size()!=2)||(command.size()==2&&command[1].size()!=4)){
+			sendback = start_usage;
+			return sendback;
+		}
 		if(command.size()==2){
+			try{stoi(command[1]);}
+			catch(...){
+				sendback = start_usage;
+				return sendback;
+			}
 			sendback = _startgame(command[1]);
 		}
 		else{
@@ -178,12 +196,16 @@ string game(string guess){
 		for(int i=0;i<4;i++){
 			if(ans[i]==guess[i]){
 				A++;
+				guesss[i] = 'x';
+				ans[i] = 'y';
 				break;
 			}
 			else{
 				for(int j=0;j<4;j++){
 					if(ans[i]==guess[j]){
 						B++;
+						guess[j] = 'x';
+						ans[i] = 'y';
 						break;
 					}
 				}
