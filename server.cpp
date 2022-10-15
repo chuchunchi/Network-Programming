@@ -189,29 +189,28 @@ string game(string guess){
 	}
 	else{
 		gametime[currentindex]--;
-		if(gametime[currentindex]==0){
-			gameans[currentindex] = "";
-			return "You lose the game!";
-		}
 		for(int i=0;i<4;i++){
 			if(ans[i]==guess[i]){
 				A++;
-				guesss[i] = 'x';
+				guess[i] = 'x';
 				ans[i] = 'y';
-				break;
 			}
-			else{
-				for(int j=0;j<4;j++){
-					if(ans[i]==guess[j]){
-						B++;
-						guess[j] = 'x';
-						ans[i] = 'y';
-						break;
-					}
+		}
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				if(ans[i]==guess[j]){
+					B++;
+					guess[j] = 'x';
+					ans[i] = 'y';
+					break;
 				}
 			}
 		}
 		ret = to_string(A)+"A"+to_string(B)+"B";
+		if(gametime[currentindex]==0){
+			gameans[currentindex] = "";
+			ret += "\nYou lose the game!";
+		}
 	}
 	return ret;
 }
