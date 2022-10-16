@@ -230,7 +230,8 @@ int main(int argc, char *argv[]){
 	info.sin_addr.s_addr = INADDR_ANY;
 	info.sin_port = htons(portnum);
 	//udp socket create
-	int udpFd = socket(AF_INET,SOCK_DGRAM,0);\
+	int udpFd = socket(AF_INET,SOCK_DGRAM,0);
+	cout << "UDP server is running\n";
 	if(udpFd==-1) printf("socket create fail.\n");
 	int optu;
 	int multiconnectu = setsockopt(udpFd,SOL_SOCKET,SO_REUSEADDR,(char *)&optu,sizeof(optu));
@@ -241,6 +242,7 @@ int main(int argc, char *argv[]){
 
 	//tcp socket create
 	int tcpFd = socket(AF_INET,SOCK_STREAM,0);
+	cout << "TCP server is running\n";
 	char msg[40] = "*****Welcome to Game 1A2B*****";
 	if(tcpFd==-1) printf("socket create fail.\n");
 	int opt;
@@ -301,6 +303,7 @@ int main(int argc, char *argv[]){
 				char buffer[1024];
 				int r = recv(client_sds[i],buffer,1024,0);
 				if(r==0){
+					islogin[currentindex] = "";
 					close(client_sds[i]);
 					client_sds[i] = 0;
 				}
