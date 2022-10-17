@@ -15,6 +15,7 @@
 #include <set>
 #include <map>
 #include <time.h>
+#include <algorithm>
 using namespace std;
 int currentindex;
 string reg_usage = "Usage: register <username> <email> <password>";
@@ -137,8 +138,14 @@ string _login(string username,string password){
 		ret = "Password not correct.";
 	}
 	else{
-		islogin[currentindex] = username;
-		ret = "Welcome, "+username+".";
+		vector<string>::iterator it = find(islogin.begin(),islogin.end(),username);
+		if(it != islogin.end()){
+			ret = "Please logout first.";
+		}
+		else{
+			islogin[currentindex] = username;
+			ret = "Welcome, "+username+".";
+		}
 	}
 	return ret;
 }
