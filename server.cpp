@@ -156,8 +156,7 @@ string _logout(){
 }
 
 string _gamerule(){
-	return "*****Welcome to Game 1A2B*****\n\
-1. Each question is a 4-digit secret number.\n\
+	return "1. Each question is a 4-digit secret number.\n\
 2. After each guess, you will get a hint with the following information:\n\
 2.1 The number of \"A\", which are digits in the guess that are in the correct position.\n\
 2.2 The number of \"B\", which are digits in the guess that are in the answer but are in the wrong position.\n\
