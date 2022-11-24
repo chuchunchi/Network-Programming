@@ -29,24 +29,32 @@ string _login(string username,string password);
 string _logout();
 string _createpublic(string gameRoomID);
 string _createprivate(string gameRoomID, string invitationCode);
-string _gamerule();
+string _listroom();
+string _listuser();
 string _startgame(string number);
 string _exit();
 string game(string guess);
-vector<string> emails(10,"");
-map<string,string> account; // {username: password}
+vector<string> emails;
+map<string, pair<string,string> > account; // {username: password,email}
+vector<string> islogin(10,""); // username
+vector<unsigned int> inRoom(10,0); //room ID
+map<unsigned int, int> roomStart; // {RoomID: start or not }
+map<unsigned int, int> roomIsPub; // {RoomID: is public or not}
 string IOHandle(char *recvmsg){
 	string sendback="";
 	vector<string> command;
 	command.push_back("");
 	int para=0;
 	for(int i=0;i<strlen(recvmsg);i++){
+		if(recvmsg[i]=='\n'){
+			break;
+		}
 		if(recvmsg[i]!=' '){
 			command[para]+=recvmsg[i];
 		}
 		else{
 			command.push_back("");
-			//cout << command[para] << endl;
+			//cou-t << command[para] << endl;
 			para++;
 		}
 	}
@@ -73,8 +81,11 @@ string IOHandle(char *recvmsg){
 			sendback = _createprivate(command[3], command[4]);
 		}
 	}
-	else if(command[0]=="game-rule"){
-		sendback = _gamerule();
+	else if(command[0]=="list" && command[1]=="rooms"){
+		sendback = _listroom();
+	}
+	else if(command[0]=="list" && command[1]=="users"){
+		sendback = _listuser();
 	}
 	else if(command[0]=="start-game"){
 		if((command.size()!=1&&command.size()!=2)||(command.size()==2&&command[1].size()!=4)){
@@ -116,7 +127,7 @@ string IOHandle(char *recvmsg){
 }
 string _register(string username,string email,string password){
 	string ret;
-	map<string,string>::iterator itm;
+	map<string,pair<string,string> >::iterator itm;
 	itm = account.find(username);
 	vector<string>::iterator its;
 	its = find(emails.begin(), emails.end(), email);
@@ -124,16 +135,16 @@ string _register(string username,string email,string password){
 		ret = "Username or Email is already used";
 	}
 	else{
-		account.insert(pair<string,string>(username,password));
-		emails[currentindex] = email;
-		ret = "Register successfully";
+		account.insert(pair<string,pair<string,string> >(username,make_pair(password, email)));
+		emails.push_back(email);
+		ret = "Register Successfully";
 	}
 	return ret;
 }
-vector<string> islogin(10,""); // username
+
 string _login(string username,string password){
 	string ret;
-	map<string,string>::iterator itm;
+	map<string,pair<string,string> >::iterator itm;
 	itm = account.find(username);
 	
 	if(itm==account.end()){
@@ -142,7 +153,7 @@ string _login(string username,string password){
 	else if(islogin[currentindex]!=""){
 		ret = "You already logged in as " + islogin[currentindex];
 	}
-	else if(password!=itm->second){
+	else if(password!=itm->second.first){
 		ret = "Wrong password";
 	}
 	else{
@@ -157,7 +168,7 @@ string _login(string username,string password){
 	}
 	return ret;
 }
-vector<unsigned int> inRoom(10,0);
+
 string _logout(){
 	string ret;
 	if(islogin[currentindex]==""){
@@ -188,6 +199,8 @@ string _createpublic(string strroomID){
 	}
 	else{
 		inRoom[currentindex] = roomID;
+		roomStart[roomID] = 0;
+		roomIsPub[roomID] = 1;
 		ret = "You create public game room " + strroomID;
 	}
 	return ret;
@@ -210,17 +223,53 @@ string _createprivate(string strroomID, string inviteCode){
 	}
 	else{
 		inRoom[currentindex] = roomID;
+		roomStart[roomID] = 0;
+		roomIsPub[roomID] = 0;
 		ret = "You create private game room " + strroomID;
 	}
 	return ret;
 }
-string _gamerule(){
-	return "1. Each question is a 4-digit secret number.\n\
-2. After each guess, you will get a hint with the following information:\n\
-2.1 The number of \"A\", which are digits in the guess that are in the correct position.\n\
-2.2 The number of \"B\", which are digits in the guess that are in the answer but are in the wrong position.\n\
-The hint will be formatted as \"xAyB\".\n\
-3. 5 chances for each question.\n";
+string _listroom(){
+	string ret = "List Game Rooms";
+	if(roomIsPub.size()==0){
+		ret += "\nNo Rooms";
+	}
+	else{
+		map<unsigned int, int>::iterator it1;
+		map<unsigned int, int>::iterator it2 = roomStart.begin();
+		int idx=0;
+		for(it1=roomIsPub.begin();it1!=roomIsPub.end();it1++){
+			string P = (it1->second)? ". (Public) Game Room " : ". (Private) Game Room ";
+			string S = (it2->second)?  " is open for players" : " has started playing";
+			ret += ('\n' + to_string(idx) + P + to_string(it1->first) + S);
+			it2++;
+			idx++;
+		}
+	}
+	return ret;
+}
+string _listuser(){
+	string ret = "List Users";
+	if(account.size()==0){
+		ret += "\nNo Users";
+	}
+	else{
+		map<string, pair<string,string> >::iterator it;
+		int idx=0;
+		for(it=account.begin();it!=account.end();it++){
+			string S = "";
+			vector<string>::iterator its = find(islogin.begin(),islogin.end(),it->first);
+			if(its != islogin.end()){
+				S = "Online";
+			}
+			else{
+				S = "Offline";
+			}
+			ret += ('\n' + to_string(idx) + ". " + it->first + "<" + it->second.second + "> " + S);
+			idx++;
+		}
+	}
+	return ret;
 }
 
 string _startgame(string number){
@@ -281,6 +330,10 @@ string _exit(){
 
 int main(int argc, char *argv[]){
 	int portnum = 8888;
+	if(argc==2){
+		portnum = atoi(argv[1]);
+		cout << portnum << endl;
+	}
 	
 	struct sockaddr_in info,client_info;
 	bzero(&info,sizeof(info));
@@ -347,30 +400,36 @@ int main(int argc, char *argv[]){
 			if(r<=0){
 				cout << "recv from udp error" <<'\n';
 			}
-			char sendback[1024] = {};
-			strcpy(sendback,IOHandle(bufu).c_str());
+			char* sendback;
+			string ret = IOHandle(bufu);
+			strcpy(sendback,ret.c_str());
 			cout << sendback << endl;
-			int s = sendto(udpFd,sendback,sizeof(sendback),MSG_CONFIRM,(const struct sockaddr *) &client_info,info_size);
+			int s = sendto(udpFd,sendback,ret.size(),MSG_CONFIRM,(const struct sockaddr *) &client_info,info_size);
+			
 			if(s<=0) cout << "sent back error!\n";
 		}
 		//old connection's operation
 		for(int i=0;i<10;i++){
 			if(FD_ISSET(client_sds[i],&readfds)){
 				currentindex = i;
-				char buffer[1024];
+				char buffer[1024] = {};
 				int r = recv(client_sds[i],buffer,1024,0);
+				cout << buffer << endl;
 				if(r==0){
 					islogin[currentindex] = "";
 					close(client_sds[i]);
 					client_sds[i] = 0;
 				}
 				else if(r==-1) continue;
-				else{
-					char sendback[1024];
-					strcpy(sendback,IOHandle(buffer).c_str());
+				else{	
+					char sendback[1024] = {};
+					string ret = IOHandle(buffer);
+					strcpy(sendback,ret.c_str());
 					//cout << client_sds[i] << '\n';
-					send(client_sds[i],sendback,1024,0);
+					cout << sendback;
+					send(client_sds[i],sendback,ret.size(),0);
 				}
+				memset(buffer, '\0', 1024);
 			}
 		}
 	}	

@@ -1,0 +1,47 @@
+*** testcases_correct/list_rooms_and_users_sample
+--- build/testcases_your/list_rooms_and_users_sample
+***************
+*** 5,25 ****
+  (0) Register Successfully
+  (1) Register Successfully
+  (0) List Users
+! 1. Alice<alice@gmail.com> Offline
+! 2. Bob<bob@gmail.com> Offline
+  (0) Welcome, Alice
+  (1) Welcome, Bob
+  (0) List Users
+! 1. Alice<alice@gmail.com> Online
+! 2. Bob<bob@gmail.com> Online
+  (0) You create public game room 1234
+  (0) List Game Rooms
+! 1. (Public) Game Room 1234 is open for players
+  (1) You create private game room 5678
+! (0) You leave game room 1234
+! (1) You leave game room 5678
+! (1) Goodbye, Bob
+! (0) Goodbye, Alice
+  (0) List Users
+! 1. Alice<alice@gmail.com> Offline
+! 2. Bob<bob@gmail.com> Offline
+--- 5,25 ----
+  (0) Register Successfully
+  (1) Register Successfully
+  (0) List Users
+! 0. Alice<alice@gmail.com> Offline
+! 1. Bob<bob@gmail.com> Offline
+  (0) Welcome, Alice
+  (1) Welcome, Bob
+  (0) List Users
+! 0. Alice<alice@gmail.com> Online
+! 1. Bob<bob@gmail.com> Online
+  (0) You create public game room 1234
+  (0) List Game Rooms
+! 0. (Public) Game Room 1234 has started playing
+  (1) You create private game room 5678
+! (0) 
+! (1) 
+! (1) You are already in game room 5678, please leave game room
+! (0) You are already in game room 1234, please leave game room
+  (0) List Users
+! 0. Alice<alice@gmail.com> Online
+! 1. Bob<bob@gmail.com> Online
