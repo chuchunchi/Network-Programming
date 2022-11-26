@@ -1,0 +1,23 @@
+*** testcases_correct/guess_sample
+--- build/testcases_your/guess_sample
+***************
+*** 25,34 ****
+  (Broadcast to 1) Alice guess '2234' and got '3A0B'
+  (1) Bob guess '3322' and got '0A4B'
+  (Broadcast to 0) Bob guess '3322' and got '0A4B'
+! (0) Alice guess '2333' and got '3A0B'
+! (Broadcast to 1) Alice guess '2333' and got '3A0B'
+  (1) Bob guess '2323' and got '2A2B'
+  (Broadcast to 0) Bob guess '2323' and got '2A2B'
+! (0) Alice guess '2233' and got Bingo!!! Alice wins the game, game ends
+! (Broadcast to 1) Alice guess '2233' and got Bingo!!! Alice wins the game, game ends
+! (0) You are game room manager, please start game first
+--- 25,32 ----
+  (Broadcast to 1) Alice guess '2234' and got '3A0B'
+  (1) Bob guess '3322' and got '0A4B'
+  (Broadcast to 0) Bob guess '3322' and got '0A4B'
+! (0) Please wait..., current player is Bob
+  (1) Bob guess '2323' and got '2A2B'
+  (Broadcast to 0) Bob guess '2323' and got '2A2B'
+! (0) Please wait..., current player is Bob
+! (0) Please wait..., current player is Bob

@@ -1,0 +1,18 @@
+*** testcases_correct/join_room_sample
+--- build/testcases_your/join_room_sample
+***************
+*** 19,24 ****
+  (0) You create public game room 105
+  (1) You join game room 105
+  (Broadcast to 0) Welcome, Bob to game!
+! (0) Game start! Current player is Alice
+! (Broadcast to 1) Game start! Current player is Alice
+! (2) Game has started, you can't join now
+--- 19,25 ----
+  (0) You create public game room 105
+  (1) You join game room 105
+  (Broadcast to 0) Welcome, Bob to game!
+! (0) Please enter 4 digit number with leading zero
+! (2) You join game room 105
+! (Broadcast to 0) Welcome, David to game!
+! (Broadcast to 1) Welcome, David to game!

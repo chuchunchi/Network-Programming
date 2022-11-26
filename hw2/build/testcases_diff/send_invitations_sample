@@ -1,0 +1,17 @@
+*** testcases_correct/send_invitations_sample
+--- build/testcases_your/send_invitations_sample
+***************
+*** 15,20 ****
+  (0) Invitee not logged in
+  (1) Welcome, Bob
+  (0) You send invitation to Bob<bob@gmail.com>
+! (Broadcast to 1) You receive invitation from Alice<alice@gmail.com>
+  (0) You send invitation to David<david@gmail.com>
+! (Broadcast to 2) You receive invitation from Alice<alice@gmail.com>
+--- 15,20 ----
+  (0) Invitee not logged in
+  (1) Welcome, Bob
+  (0) You send invitation to Bob<bob@gmail.com>
+! (Broadcast to 1) You reveive invitation from Alice<alice@gmail.com>
+  (0) You send invitation to David<david@gmail.com>
+! (Broadcast to 2) You reveive invitation from Alice<alice@gmail.com>

@@ -23,7 +23,7 @@ string reg_usage = "Usage: register <username> <email> <password>";
 string login_usage = "Usage: login <username> <password>";
 string start_usage = "Usage: start-game <4-digit number>";
 vector<int> client_sds (10,0);
-map<unsigned int, int> gameans;
+map<unsigned int, string> gameans;
 map<unsigned int, int> gameround;
 map<unsigned int, int> curplayer; // index in userinroom vector
 string _register(string username,string email,string password);
@@ -41,7 +41,7 @@ string _leaveroom();
 string _startgame(string rounds, string number);
 string _guess(string number);
 string _exit();
-string game(string guess);
+string game(string guess, unsigned int roomID);
 vector<string> emails;
 map<string, pair<string,string> > account; // {username: password,email}
 vector<string> islogin(10,""); // username
@@ -206,6 +206,7 @@ string _createpublic(string strroomID){
 	else{
 		inRoom[currentindex] = roomID;
 		roomStart[roomID] = 0;
+		curplayer[roomID] = 0;
 		roomIsPub[roomID] = 1;
 		vector<int> tmp;
 		tmp.push_back(currentindex);
@@ -235,6 +236,7 @@ string _createprivate(string strroomID, string inviteCode){
 		inRoom[currentindex] = roomID;
 		roomStart[roomID] = 0;
 		roomIsPub[roomID] = 0;
+		curplayer[roomID] = 0;
 		vector<int> tmp;
 		tmp.push_back(currentindex);
 		userinroom[roomID] = tmp;
@@ -254,8 +256,8 @@ string _listroom(){
 		int idx=0;
 		for(it1=roomIsPub.begin();it1!=roomIsPub.end();it1++){
 			string P = (it1->second)? ". (Public) Game Room " : ". (Private) Game Room ";
-			string S = (it2->second)?  " is open for players" : " has started playing";
-			ret += ('\n' + to_string(idx) + P + to_string(it1->first) + S);
+			string S = (it2->second)?  " has started playing" : " is open for players";
+			ret += ('\n' + to_string(idx+1) + P + to_string(it1->first) + S);
 			it2++;
 			idx++;
 		}
@@ -279,7 +281,7 @@ string _listuser(){
 			else{
 				S = "Offline";
 			}
-			ret += ('\n' + to_string(idx) + ". " + it->first + "<" + it->second.second + "> " + S);
+			ret += ('\n' + to_string(idx+1) + ". " + it->first + "<" + it->second.second + "> " + S);
 			idx++;
 		}
 	}
@@ -299,7 +301,7 @@ string _joinroom(string strroomID){
 	else{
 		map<unsigned int, int>::iterator itm;
 		itm = roomIsPub.find(roomID);
-		if(itm!=roomIsPub.end()){
+		if(itm==roomIsPub.end()){
 			ret = "Game room " + strroomID + " is not exist";
 		}
 		else if(itm->second==0){
@@ -311,7 +313,7 @@ string _joinroom(string strroomID){
 		else{ //success
 		inRoom[currentindex] = roomID;
 			ret = "You join game room " + strroomID;
-			ret2other = "Welcome, " + islogin[currentindex] + "to game!";
+			ret2other = "Welcome, " + islogin[currentindex] + " to game!\n";
 			for(int i=0;i<userinroom[roomID].size();i++){
 				char sendback[1024] = {};
 				strcpy(sendback,ret2other.c_str());
@@ -323,7 +325,7 @@ string _joinroom(string strroomID){
 	return ret;
 }
 string _invite(string email){
-	vector<int>::iterator ite = find(emails.begin(), emails.end(), email);
+	vector<string>::iterator ite = find(emails.begin(), emails.end(), email);
 	int invitee_idx = distance(emails.begin(),ite);
 	string ret;
 	if(islogin[currentindex]==""){
@@ -340,7 +342,7 @@ string _invite(string email){
 	}
 	else{
 		ret = "You send invitation to " + islogin[invitee_idx] + "<" + email + ">";
-		string ret2invitee = "You reveive invitation from " + islogin[currentindex] + "<" + emails[currentindex] + ">";
+		string ret2invitee = "You receive invitation from " + islogin[currentindex] + "<" + emails[currentindex] + ">\n";
 		invitations[islogin[invitee_idx]].push_back(currentindex);
 		char sendback[1024] = {};
 		strcpy(sendback, ret2invitee.c_str());
@@ -356,7 +358,7 @@ string _listinvite(){
 	else{
 		ret = "List invitations";
 		if(invitations[islogin[currentindex]].size()==0){
-			ret += "\nNo invitations";
+			ret += "\nNo Invitations";
 		}
 		else{
 			//TODO: in ascending order of GameRoomID
@@ -364,15 +366,16 @@ string _listinvite(){
 				int inviter_idx = invitations[islogin[currentindex]][i];
 				ret += ('\n' + to_string(i) + ". " + islogin[inviter_idx] + "<" + emails[inviter_idx] + "> invite you to join game room " + to_string(inRoom[inviter_idx]) + ", invitation code is " + to_string(ismanager[inviter_idx]));
 			}*/
-			priority_queue < <unsigned int, int>, vector<unsigned int, int>, greater<unsigned int, int> > pq;
+			set < pair<unsigned int, int>, less<pair<unsigned int, int> > > s;
 			for(int i=0;i<invitations[islogin[currentindex]].size();i++){
 				int inviter_idx = invitations[islogin[currentindex]][i];
-				pq.push(make_pair(inRoom[inviter_idx],inviter_idx));
+				s.insert(make_pair(inRoom[inviter_idx],inviter_idx));
 			}
-			for(int i=0;i<invitations[islogin[currentindex]].size();i++){
-				int inviter_idx = pq.top().second;
-				pq.pop();
-				ret += ('\n' + to_string(i) + ". " + islogin[inviter_idx] + "<" + emails[inviter_idx] + "> invite you to join game room " + to_string(inRoom[inviter_idx]) + ", invitation code is " + to_string(ismanager[inviter_idx]));
+			set<pair<unsigned int, int> >::iterator itset = s.begin();
+			int idx = 0;
+			for(;itset!=s.end();itset++){
+				int inviter_idx = itset->second;
+				ret += ('\n' + to_string(++idx) + ". " + islogin[inviter_idx] + "<" + emails[inviter_idx] + "> invite you to join game room " + to_string(inRoom[inviter_idx]) + ", invitation code is " + to_string(ismanager[inviter_idx]));
 			}
 		}
 	}
@@ -410,12 +413,13 @@ string _accept(string email, string strcode){
 		else{ //success
 			unsigned int roomID = inRoom[inviter_idx];
 			ret = "You join game room " + to_string(roomID);
-			string ret2other = "Welcome, " + islogin[currentindex] +" to game!";
-			for(int i=0;i<userinroom[].size();i++){
+			string ret2other = "Welcome, " + islogin[currentindex] +" to game!\n";
+			for(int i=0;i<userinroom[roomID].size();i++){
 				char sendback[1024] = {};
 				strcpy(sendback,ret2other.c_str());
 				send(client_sds[userinroom[roomID][i]],sendback,ret2other.size(),0);
 			}
+			inRoom[currentindex] = roomID;
 			userinroom[roomID].push_back(currentindex);
 		}
 	}
@@ -434,7 +438,7 @@ string _leaveroom(){
 		string ret2other = "";
 		if(ismanager[currentindex]!=0){
 			ret = "You leave game room " + to_string(roomID);
-			ret2other = "Game room manager leave game room " + to_string(roomID) + ", you are forced to leave too";
+			ret2other = "Game room manager leave game room " + to_string(roomID) + ", you are forced to leave too\n";
 			for(int i=0;i<userinroom[roomID].size();i++){
 				int user_idx = userinroom[roomID][i];
 				inRoom[user_idx] = 0;
@@ -454,6 +458,7 @@ string _leaveroom(){
 					}
 				}
 			}
+			inRoom[currentindex] = 0;
 			roomIsPub.erase(roomID);
 			roomStart.erase(roomID);
 			userinroom.erase(roomID);
@@ -462,7 +467,7 @@ string _leaveroom(){
 		}
 		else if(roomStart[roomID]){
 			ret = "You leave game room " + to_string(roomID) + ", game ends";
-			ret2other = islogin[currentindex] + " leave game room " + to_string(roomID) + ", game ends";
+			ret2other = islogin[currentindex] + " leave game room " + to_string(roomID) + ", game ends\n";
 			for(int i=0;i<userinroom[roomID].size();i++){
 				int user_idx = userinroom[roomID][i];
 				if(user_idx!=currentindex){
@@ -475,10 +480,11 @@ string _leaveroom(){
 			inRoom[currentindex] = 0;
 			userinroom[roomID].erase(itv);
 			roomStart[roomID] = 0;
+			curplayer[roomID] = 0;
 		}
 		else{
 			ret = "You leave game room " + to_string(roomID);
-			ret2other = islogin[currentindex] + " leave game room " + to_string(roomID);
+			ret2other = islogin[currentindex] + " leave game room " + to_string(roomID) + "\n";
 			for(int i=0;i<userinroom[roomID].size();i++){
 				int user_idx = userinroom[roomID][i];
 				if(user_idx!=currentindex){
@@ -489,6 +495,7 @@ string _leaveroom(){
 			}
 			vector<int>::iterator itv = find(userinroom[roomID].begin(),userinroom[roomID].end(),currentindex);
 			userinroom[roomID].erase(itv);
+			inRoom[currentindex] = 0;
 		}
 	}
 	return ret;
@@ -518,17 +525,19 @@ string _startgame(string rounds, string number){
 		else{ //success
 			int roomID = inRoom[currentindex];
 			curplayer[roomID] = 0;
+			roomStart[roomID] = 1;
 			ret = "Game start! Current player is " + islogin[currentindex];
+			string ret2other = "Game start! Current player is " + islogin[currentindex] + "\n";
 			for(int i=0;i<userinroom[roomID].size();i++){
 				int user_idx = userinroom[roomID][i];
 				if(user_idx!=currentindex){
 					char sendback[1024] = {};
-					strcpy(sendback,ret.c_str());
-					send(client_sds[user_idx],sendback,ret.size(),0);
+					strcpy(sendback,ret2other.c_str());
+					send(client_sds[user_idx],sendback,ret2other.size(),0);
 				}
 			}
 			gameans[roomID] = number;
-			gameround[roomID] = rounds;
+			gameround[roomID] = stoi(rounds);
 		}
 	}
 	
@@ -561,19 +570,23 @@ string _guess(string number){
 			ret = "Please enter 4 digit number with leading zero";
 		}
 		else{ //success
-			game(number, roomID);
+			ret = game(number, roomID);
 		}
 	}
 	return ret;
 }
 string game(string guess, unsigned int roomID){
-	string ret, result;
+	string ret = "";
+	string result = "";
 	int A=0,B=0;
+	string org_guess = guess;
 	string ans = gameans[roomID];
 	if(ans==guess){
-		ret = islogin[currentindex] + " guess '" + ans + "' and got Bingo!!! Alice wins the game, game ends";
+		ret = islogin[currentindex] + " guess '" + ans + "' and got Bingo!!! " + islogin[currentindex] + " wins the game, game ends";
 		gameround[roomID] = 0;
 		gameans[roomID] = "";
+		roomStart[roomID] = 0;
+		curplayer[roomID] = 0;
 	}
 	else{
 		for(int i=0;i<4;i++){
@@ -594,29 +607,32 @@ string game(string guess, unsigned int roomID){
 			}
 		}
 		result = to_string(A)+"A"+to_string(B)+"B";
-		ret = islogin[currentindex] + " guess '" + guess + "' and got '" + result + "'";
+		ret = islogin[currentindex] + " guess '" + org_guess + "' and got '" + result + "'";
 		if(currentindex==userinroom[roomID].back()){
 			gameround[roomID]--;
 			if(gameround[roomID]<=0){
 				ret += "\nGame ends, no one wins";
+				roomStart[roomID] = 0;
 			}
+			curplayer[roomID] = 0;
 		}
 		else{
 			curplayer[roomID]++;
-			curplayer[roomID] %= userinroom[roomID].size();
 		}
-		for(int i=0;i<userinroom[roomID].size();i++){
-			int user_idx = userinroom[roomID][i];
-			if(user_idx!=currentindex){
-				char sendback[1024] = {};
-				strcpy(sendback,ret.c_str());
-				send(client_sds[user_idx],sendback,ret.size(),0);
-			}
+	}
+	for(int i=0;i<userinroom[roomID].size();i++){
+		int user_idx = userinroom[roomID][i];
+		if(user_idx!=currentindex){
+			string ret2 = ret+"\n";
+			char sendback[1024] = {};
+			strcpy(sendback,ret2.c_str());
+			send(client_sds[user_idx],sendback,ret2.size(),0);
 		}
 	}
 	return ret;
 }
 string _exit(){
+	unsigned int roomID = inRoom[currentindex];
 	if(ismanager[currentindex]!=0){
 		for(int i=0;i<userinroom[roomID].size();i++){
 			int user_idx = userinroom[roomID][i];
@@ -715,7 +731,7 @@ int main(int argc, char *argv[]){
 			if(r<=0){
 				cout << "recv from udp error" <<'\n';
 			}
-			char* sendback;
+			char sendback[1024] = {};
 			string ret = IOHandle(bufu);
 			strcpy(sendback,ret.c_str());
 			cout << sendback << endl;

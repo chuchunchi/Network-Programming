@@ -43,6 +43,8 @@
     "xlocinfo": "cpp",
     "map": "cpp",
     "utility": "cpp",
-    "queue": "cpp"
+    "queue": "cpp",
+    "xstddef": "cpp",
+    "set": "cpp"
   }
 }
