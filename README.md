@@ -1,2 +1,2 @@
 # Network-Programming
-NYCU, Fall '22
+Introduction to Network Programming, NYCU, 22' Fall
