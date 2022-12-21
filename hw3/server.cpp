@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,6 +42,7 @@ string _leaveroom();
 string _startgame(string rounds, string number);
 string _guess(string number);
 string _exit();
+string _status();
 string game(string guess, unsigned int roomID);
 vector<string> emails;
 map<string, pair<string,string> > account; // {username: password,email}
@@ -128,6 +130,9 @@ string IOHandle(char *recvmsg){
 	}
 	else if(command[0]=="exit"){
 		sendback = _exit();
+	}
+	else if(command[0]=="status"){
+		sendback = _status();
 	}
     return sendback + '\n';
 }
@@ -658,12 +663,46 @@ string _exit(){
 	inRoom[currentindex] = 0;
 	return "";
 }
-
+string _status(){
+	string ret = "";
+	string newline = "";
+	ifstream file_in1,file_in2,file_in3;
+	file_in1.open("/efs/logincount1.txt");
+	if(file_in1.is_open()){
+		while(getline(file_in1, newline)){
+			ret += newline;
+		}
+		file_in1.close();
+	}
+	ret += '\n';
+	file_in2.open("/efs/logincount2.txt");
+	if(file_in2.is_open()){
+		while(getline(file_in2, newline)){
+			ret += newline;
+		}
+		file_in2.close();
+	}
+	ret += '\n';
+	file_in3.open("/efs/logincount3.txt");
+	if(file_in3.is_open()){
+		while(getline(file_in3, newline)){
+			ret += newline;
+		}
+		file_in3.close();
+	}
+	//cout << ret << endl;
+	return ret;
+}
 int main(int argc, char *argv[]){
 	int portnum = 8888;
 	if(argc==2){
 		portnum = atoi(argv[1]);
 	}
+	ofstream file_out;
+	//cout << num_login << endl;
+	file_out.open("/efs/logincount1.txt", std::ofstream::out | std::ofstream::trunc);
+	file_out << "Server1: " << 0 << endl;
+	file_out.close();
 	
 	struct sockaddr_in info,client_info;
 	bzero(&info,sizeof(info));
@@ -758,6 +797,17 @@ int main(int argc, char *argv[]){
 					send(client_sds[i],sendback,ret.size(),0);
 				}
 				memset(buffer, '\0', 1024);
+				int num_login = 0;
+				for(int i=0;i<10;i++){
+					if(islogin[i]!=""){
+                        		        num_login ++;
+                        		}
+                		}
+				//cout << num_login << endl;
+				file_out.open("/efs/logincount1.txt");
+				file_out << "Server1: " << num_login << endl;
+				file_out.close();
+
 			}
 		}
 	}	
