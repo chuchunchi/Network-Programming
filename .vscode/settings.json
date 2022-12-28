@@ -5,6 +5,9 @@
         "initializer_list": "cpp",
         "vector": "cpp",
         "iostream": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "iosfwd": "cpp",
+        "ostream": "cpp",
+        "string": "cpp"
     }
 }

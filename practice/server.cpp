@@ -63,28 +63,28 @@ string IOHandle(char *recvmsg){
 		
 	}
 	else if(command[0]=="yell"){
-		char sendback[1024] = {};
-		string recvstr = str(recvmsg);
+		char sb[1024] = {};
+		string recvstr = string(recvmsg);
 		string ret = islogin[currentindex] + ": " + recvstr.substr(5) + ".";
-		strcpy(sendback,ret.c_str());
+		strcpy(sb,ret.c_str());
 		for(int i=0;i<10;i++){
 			if(i!=currentindex && client_sds[i]!=0 && mutemode[i]!=1){
-				send(client_sds[i],sendback,ret.size(),0);
+				send(client_sds[i],sb,ret.size(),0);
 			}
 		}
 	}
 	else if(command[0]=="tell"){
 		string rcver = command[1];
-		char sendback[1024] = {};
-		string recvstr = str(recvmsg);
+		char sb[1024] = {};
+		string recvstr = string(recvmsg);
 		string ret = islogin[currentindex] + " told you: " + recvstr.substr(11) + ".";
-		strcpy(sendback,ret.c_str());
+		strcpy(sb,ret.c_str());
 		vector<string>::iterator itv = find(islogin.begin(),islogin.end(),rcver);
 		if(itv==islogin.end()){
 			sendback = rcver + " does not exist.";
 		}
 		else{
-			send(client_sds[distance(islogin.begin(),itv)],sendback,ret.size(),0);
+			send(client_sds[distance(islogin.begin(),itv)],sb,ret.size(),0);
 		}
 	}
 	else if(command[0]=="exit"){
@@ -153,10 +153,6 @@ int main(int argc, char *argv[]){
 					strcat(msg,to_string(inde).c_str());
 					strcat(msg,".");
 					send(new_client, msg, strlen(msg), 0);
-					cout << "New connection from " << inet_ntoa(client_info.sin_addr) << ":" << ntohs(client_info.sin_port) << " user" << inde << endl;
-					string tmp(inet_ntoa(client_info.sin_addr));
-					IPs[i] = tmp;
-					Ports[i] = ntohs(client_info.sin_port);
 					break;
 				}
 			}
@@ -168,7 +164,6 @@ int main(int argc, char *argv[]){
 				char buffer[1024];
 				int r = recv(client_sds[i],buffer,1024,0);
 				if(r==0){
-					cout << islogin[i] << " " << IPs[i]<<":"<<Ports[i] << " disconnected" << endl;
 					islogin[currentindex] = "";
 					close(client_sds[i]);
 					client_sds[i] = 0;

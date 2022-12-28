@@ -666,31 +666,29 @@ string _exit(){
 string _status(){
 	string ret = "";
 	string newline = "";
-	ifstream file_in1,file_in2,file_in3;
-	file_in1.open("/efs/logincount1.txt");
-	if(file_in1.is_open()){
-		while(getline(file_in1, newline)){
+	ifstream file_in;
+	file_in.open("/efs/logincount1.txt");
+	if(file_in.is_open()){
+		while(getline(file_in, newline)){
 			ret += newline;
 		}
-		file_in1.close();
+		file_in.close();
 	}
-	ret += '\n';
-	file_in2.open("/efs/logincount2.txt");
-	if(file_in2.is_open()){
-		while(getline(file_in2, newline)){
+	file_in.open("/efs/logincount2.txt");
+	if(file_in.is_open()){
+		while(getline(file_in, newline)){
 			ret += newline;
 		}
-		file_in2.close();
+		file_in.close();
 	}
-	ret += '\n';
-	file_in3.open("/efs/logincount3.txt");
-	if(file_in3.is_open()){
-		while(getline(file_in3, newline)){
+	file_in.open("/efs/logincount3.txt");
+	if(file_in.is_open()){
+		while(getline(file_in, newline)){
 			ret += newline;
 		}
-		file_in3.close();
+		file_in.close();
 	}
-	//cout << ret << endl;
+	print(ret)
 	return ret;
 }
 int main(int argc, char *argv[]){
@@ -700,8 +698,8 @@ int main(int argc, char *argv[]){
 	}
 	ofstream file_out;
 	//cout << num_login << endl;
-	file_out.open("/efs/logincount1.txt", std::ofstream::out | std::ofstream::trunc);
-	file_out << "Server1: " << 0 << endl;
+	file_out.open("/efs/logincount3.txt", std::ofstream::out | std::ofstream::trunc);
+	file_out << "server3: " << 0 << endl;
 	file_out.close();
 	
 	struct sockaddr_in info,client_info;
@@ -798,17 +796,18 @@ int main(int argc, char *argv[]){
 				}
 				memset(buffer, '\0', 1024);
 				int num_login = 0;
+		
 				for(int i=0;i<10;i++){
 					if(islogin[i]!=""){
-                        		        num_login ++;
-                        		}
-                		}
+						num_login ++;
+					}
+				}
 				//cout << num_login << endl;
-				file_out.open("/efs/logincount1.txt");
-				file_out << "Server1: " << num_login << endl;
+				file_out.open("/efs/logincount3.txt");
+				file_out << "server3: " << num_login << endl;
 				file_out.close();
-
 			}
 		}
+		
 	}	
 }

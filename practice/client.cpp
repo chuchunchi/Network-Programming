@@ -11,7 +11,7 @@
 #include <vector>
 using namespace std;
 int isexit = 0;
-string IOHandle(char * recvmsg,int * istcp){
+string IOHandle(char * recvmsg){
 	string sendback="";
 	vector<string> command;
 	command.push_back("");
@@ -25,7 +25,7 @@ string IOHandle(char * recvmsg,int * istcp){
 			para++;
 		}
 	}
-	else if(command[0]=="exit"){
+	if(command[0]=="exit"){
 		isexit = 1;
 	}
     return sendback;
@@ -38,7 +38,6 @@ int main(int argc, char *argv[]){
 	info.sin_family = AF_INET;
 	info.sin_addr.s_addr = inet_addr(IP);
 	info.sin_port = htons(portnum);
-	
 	//tcp socket create
 	int tcpFd = socket(AF_INET,SOCK_STREAM,0);
 	if(tcpFd==-1) printf("socket create fail.\n");
@@ -51,12 +50,12 @@ int main(int argc, char *argv[]){
 	//recv(tcpFd,receivemsg,sizeof(receivemsg),0);
 	//cout << receivemsg << '\n';
 	while(1){ 
-		cout << "% ";
+		
 		FD_SET(tcpFd, &readset);
 		FD_SET(STDIN_FILENO, &readset);
-		fdmax = tcpFd;
+		int fdmax = tcpFd;
 		if(select(fdmax+1,&readset,NULL,NULL,NULL)<0){
-			printf(stdout, "select() error\n");
+			printf("select() error\n");
 		}
 		if(FD_ISSET(tcpFd,&readset)){
 			char receivemsg[1024];
@@ -65,8 +64,9 @@ int main(int argc, char *argv[]){
 		}
 		if(FD_ISSET(STDIN_FILENO,&readset)){
 			char command[1024] = {0};
-			read(STDIN_FILENO, command, sizeof(command)-1);
-			string usage = IOHandle(command,&istcp);
+			cin.getline(command,1024);
+			//read(STDIN_FILENO, command, sizeof(command)-1);
+			string usage = IOHandle(command);
 			int s=send(tcpFd,command,sizeof(command),0);
 			if(s==-1) cout << "send error\n";
 			
