@@ -43,20 +43,26 @@ string IOHandle(char *recvmsg){
 		}
 	}
 	if(command[0]=="mute"){
-		if(mutemode[currentindex]){
+		cout << mutemode[currentindex] << endl;
+		if(mutemode[currentindex]==1){
+			cout << "already" << endl;
 			sendback = "You are already in mute mode.";
 		}
 		else{
+			cout << "yes inside" << endl;
 			mutemode[currentindex] = 1;
 			sendback = "Mute mode.";
 		}
 		
 	}
 	else if(command[0]=="unmute"){
-		if(!mutemode[currentindex]){
+		cout << mutemode[currentindex] << endl;
+		if(mutemode[currentindex]==0){
+			cout << "already" << endl;
 			sendback = "You are already in unmute mode.";
 		}
 		else{
+			cout << "yes inside" << endl;
 			mutemode[currentindex] = 0;
 			sendback = "Unmute mode.";
 		}
@@ -65,7 +71,7 @@ string IOHandle(char *recvmsg){
 	else if(command[0]=="yell"){
 		char sb[1024] = {};
 		string recvstr = string(recvmsg);
-		string ret = islogin[currentindex] + ": " + recvstr.substr(5) + ".";
+		string ret = islogin[currentindex] + ": " + recvstr.substr(5);
 		strcpy(sb,ret.c_str());
 		for(int i=0;i<10;i++){
 			if(i!=currentindex && client_sds[i]!=0 && mutemode[i]!=1){
@@ -77,18 +83,28 @@ string IOHandle(char *recvmsg){
 		string rcver = command[1];
 		char sb[1024] = {};
 		string recvstr = string(recvmsg);
-		string ret = islogin[currentindex] + " told you: " + recvstr.substr(11) + ".";
+		string ret = islogin[currentindex] + " told you: " + recvstr.substr(6+command[1].size());
 		strcpy(sb,ret.c_str());
 		vector<string>::iterator itv = find(islogin.begin(),islogin.end(),rcver);
+		int rcveridx = distance(islogin.begin(),itv);
 		if(itv==islogin.end()){
 			sendback = rcver + " does not exist.";
 		}
+		else if(rcver==islogin[currentindex]){
+			sendback = "Can't send message to yourself.";
+		}
+		else if(mutemode[rcveridx]){
+			sendback = "Receiver is muted.";
+		}
 		else{
-			send(client_sds[distance(islogin.begin(),itv)],sb,ret.size(),0);
+			send(client_sds[rcveridx],sb,ret.size(),0);
 		}
 	}
 	else if(command[0]=="exit"){
 		sendback = _exit();
+	}
+	else{
+		sendback = "Invalid input.";
 	}
     return sendback;
 }
@@ -98,6 +114,7 @@ string _exit(){
 	islogin[currentindex]="";
 	close(client_sds[currentindex]);
 	client_sds[currentindex] = 0;
+	mutemode[currentindex] = 0;
 	return "";
 }
 
@@ -149,10 +166,15 @@ int main(int argc, char *argv[]){
 					client_sds[i] = new_client;
 					islogin[i] = "user" + to_string(inde);
 					ind[i] = inde;
-					char msg[1024] = "Welcome, user";
+					
+					string welcome = string("**************************\n")+"*Welcome to the BBS server.*\n"+"**************************\n"+"Welcome,user";
+					char msg[1024] = {};
+					strcpy(msg,welcome.c_str());
 					strcat(msg,to_string(inde).c_str());
-					strcat(msg,".");
+					strcat(msg,".\n");
+					cout << msg << endl;
 					send(new_client, msg, strlen(msg), 0);
+					memset(msg, '\0', 1024);
 					break;
 				}
 			}
@@ -167,14 +189,22 @@ int main(int argc, char *argv[]){
 					islogin[currentindex] = "";
 					close(client_sds[i]);
 					client_sds[i] = 0;
+					mutemode[currentindex] = 0;
 				}
 				else if(r==-1) continue;
 				else{
-					char sendback[1024];
-					strcpy(sendback,IOHandle(buffer).c_str());
-					send(client_sds[i],sendback,1024,0);
+					char sendback[1024] = {0};
+					string ret = IOHandle(buffer);
+					if(ret!=""){
+						strcpy(sendback,ret.c_str());
+						send(client_sds[i],sendback,1024,0);
+					}
+					
+					memset(sendback, '\0', 1024);
 				}
+				memset(buffer, '\0', 1024);
 			}
+			
 		}
 	}	
 }

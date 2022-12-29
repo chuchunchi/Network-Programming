@@ -18,16 +18,16 @@
 #include <algorithm>
 using namespace std;
 int currentindex;
-vector<int> client_sds (10,0);
+vector<int> client_sds (4,0);
 string _exit();
 string game(string guess);
 map<string,int> account;
-vector<string> islogin (10,"");
-vector<string> IPs (10,"");
-vector<uint16_t> Ports (10,0);
+vector<string> islogin (4,"");
+vector<string> IPs (4,"");
+vector<uint16_t> Ports (4,0);
 int inde=0;
 int isexit=0;
-vector<int> ind (10,0);
+vector<int> ind (4,0);
 string IOHandle(char *recvmsg){
 	string sendback="";
 	vector<string> command;
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]){
 	
 	int b = bind(tcpFd,(struct sockaddr *)&info,sizeof(info));
 	if(b==-1) printf("bind error\n");
-	int l = listen(tcpFd,10);
+	int l = listen(tcpFd,4);
 	if(l==-1) printf("listen error\n");
 	socklen_t info_size = sizeof(client_info);
 	fd_set readfds;
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]){
 		FD_SET(tcpFd,&readfds);
 		int maxsd = tcpFd;
 		//add child socket to set
-		for(int i=0;i<10;i++){
+		for(int i=0;i<4;i++){
 			if(client_sds[i]>0) FD_SET(client_sds[i],&readfds);
 			if(client_sds[i]>maxsd) maxsd=client_sds[i];		
 		}
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]){
 			if(new_client==-1) printf("connection error\n");
 			inde++;
 			isexit=0;
-			for(int i=0;i<10;i++){
+			for(int i=0;i<4;i++){
 				if(client_sds[i]!=0) continue;
 				else{
 					//put new client to an empty client sd
@@ -167,7 +167,7 @@ int main(int argc, char *argv[]){
 			}
 		}
 		//old connection's operation
-		for(int i=0;i<10;i++){
+		for(int i=0;i<4;i++){
 			if(FD_ISSET(client_sds[i],&readfds)){
 				currentindex = i;
 				char buffer[1024];

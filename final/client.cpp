@@ -43,8 +43,9 @@ int main(int argc, char *argv[]){
 	if(tcpFd==-1) printf("socket create fail.\n");
 	int err = connect(tcpFd,(struct sockaddr *)&info,sizeof(info));
 	if(err==-1) printf("connect error\n");
-	char receivemsg[1024];
-	
+	//char receivemsg[1024];
+	//recv(tcpFd,receivemsg,sizeof(receivemsg),0);
+	//cout << receivemsg;
 	fd_set readset;
 
 	//recv(tcpFd,receivemsg,sizeof(receivemsg),0);
@@ -58,9 +59,10 @@ int main(int argc, char *argv[]){
 			printf("select() error\n");
 		}
 		if(FD_ISSET(tcpFd,&readset)){
-			char receivemsg[1024];
+			char receivemsg[1024] = {0};
 			recv(tcpFd,receivemsg,sizeof(receivemsg),0);
-			cout << receivemsg << '\n';
+			cout << receivemsg << endl;
+			memset(receivemsg, '\0', 1024);
 		}
 		if(FD_ISSET(STDIN_FILENO,&readset)){
 			char command[1024] = {0};
